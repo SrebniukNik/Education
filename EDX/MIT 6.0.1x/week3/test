@@ -1,0 +1,24 @@
+def ndigits(x):
+    '''
+        this function outputs the number of digits of x
+    '''
+    # if x is negative, make it positive(ignore the sign)
+    if x < 0:
+        x *= -1
+    # if x is zero, the digit is 0
+    if x == 0:
+        return 0
+    # base case: if 0<x<10, the digit is 1
+    if x/10 == 0:
+        return 1
+    # add the digits of a smaller problem + current digit which is 1
+    return 1 + ndigits(x/10)
+
+
+print ndigits(4444)
+
+
+
+
+
+
