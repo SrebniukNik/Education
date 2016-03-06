@@ -1,0 +1,99 @@
+# template for "Stopwatch: The Game"
+
+import simplegui
+
+# Global variables
+interval = 100
+total_time = 0
+total_count = 0
+player_win = 0
+message = ""
+switch = True
+
+
+def format(total_time):
+    '''
+    Formatting time in special string A:BC.D for our project
+    '''
+    global message, msec
+    time_int = int(total_time)
+    minutes = time_int / 60
+    sec = time_int - minutes * 60
+    msec = int(round((total_time - minutes * 60 - sec) * 10))
+    minutes_str = str(minutes)
+    sec_str = str(sec)
+    #Prepending "0" to one digit time's vaues
+    if minutes <= 9:
+        minutes_str = "0" + str(minutes)
+    if sec <= 9:
+        sec_str = "0" + str(sec)
+    #Form timer string  
+    message = minutes_str + ":" + sec_str + "." + str(msec)
+    
+
+def start():    
+    '''
+    Function for START button
+    '''
+    global switch
+    switch = True
+    timer.start()
+
+
+def stop():
+    '''
+    Function for STOP button
+    '''
+    global player_win, total_count, msec, switch
+    timer.stop()
+    if msec == 0:
+        player_win += 1
+    if switch:
+        total_count += 1
+    switch = False
+
+def reset():
+    '''
+    Function for RESET button
+    '''
+    global total_count, player_win
+    total_count = 0
+    player_win = 0
+    timer.stop()
+    format(0)
+    
+    
+def tick():
+    '''
+    Event handler for timer with 1 sec interval
+    '''
+    global total_time
+    total_time += 0.1
+    format(total_time)
+
+# define draw handler
+def draw(canvas):
+    '''
+    Draw handler
+    '''    
+    canvas.draw_text(message, (100, 120), 36, "Red")
+    canvas.draw_text( str(player_win)+"/"+str(total_count) , (240, 20), 18, "Green")
+                     
+# Frame
+frame = simplegui.create_frame("Home", 300, 200)
+
+# Event handlers
+frame.add_button("Start", start, 50)
+frame.add_button("Stop", stop, 50)
+frame.add_button("Reset", reset, 50)
+
+frame.set_draw_handler(draw)
+timer = simplegui.create_timer(interval, tick)
+
+
+# starting frame and show timer
+frame.start()
+format(0)
+
+
+# Please remember to review the grading rubric

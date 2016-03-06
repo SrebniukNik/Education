@@ -1,0 +1,77 @@
+# implementation of card game - Memory
+# Author Borodatuy Dyad'ko
+# ver 1.1
+
+import simplegui
+import random
+
+def new_game():
+    """
+    helper function to initialize globals
+    """
+    global numbers, exposed, check_list, count 
+    count = 0
+    check_list = []
+    exposed = {}
+    #Populating list with 16 numbers
+    numbers = [ i for i in range(0, 8)] * 2
+    random.shuffle(numbers)
+    #Populating dict with card status
+    for key in range(16):
+        exposed[key] = True  
+
+def mouseclick(pos):
+    """
+    Event handlers for mouse click
+    """
+    global exposed, check_list, numbers, count
+    current_card = pos[0] // 50
+    #Checks mouse point pos against a same card
+    if current_card not in check_list:
+        exposed[current_card] = False
+        check_list.append(current_card)
+        #Doing some magic 
+        if len(check_list) > 2 and numbers[check_list[0]] == numbers[check_list[1]]:
+            for idx in range(2):
+                exposed[check_list[idx]] = False
+            check_list = [check_list.pop(-1)]
+            count +=1    
+        elif len(check_list) > 2 and numbers[check_list[0]] != numbers[check_list[1]]:        
+            for idx in range(2):
+                exposed[check_list[idx]] = True
+            check_list = [check_list.pop(-1)]
+            count +=1
+        #Refresh player counts
+        label.set_text( "Turns = " + str(count))
+                       
+# cards are logically 50x100 pixels in size    
+def draw(canvas):
+    """
+    Drawing canvas with cards and numbers
+    """
+    global numbers, exposed
+    number_x = 10
+    hidden_x = 0
+    #Draw numbers
+    for number in numbers:
+        canvas.draw_text( str(number), (number_x, 80), 72, 'Yellow')
+        number_x += 50
+    #Draw cards
+    for idx in exposed:
+        if exposed[idx]:
+            canvas.draw_polygon([(hidden_x, 0), (hidden_x + 50, 0), (hidden_x + 50, 100), 
+                                (hidden_x, 100)], 1, 'Black', 'Green')
+        hidden_x += 50    
+
+# Frame, button and labels
+frame = simplegui.create_frame("Memory", 800, 100)
+frame.add_button("Reset", new_game)
+label = frame.add_label( "Turns = 0" )
+
+# Event handlers
+frame.set_mouseclick_handler(mouseclick)
+frame.set_draw_handler(draw)
+
+# Lets rock
+new_game()
+frame.start()
