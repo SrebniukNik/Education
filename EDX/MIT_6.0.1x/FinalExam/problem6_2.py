@@ -23,7 +23,7 @@ class ArrogantProfessor(Professor):
   def say(self, stuff):
     return self.name + ' says: ' + self.lecture(stuff)
   def lecture(self, stuff):
-    return 'It is obvious that ' + Person.say(self, stuff)
+    return 'It is obvious that ' + Lecturer.lecture(self,stuff)
 
 
 e = Person('eric')
