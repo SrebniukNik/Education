@@ -124,8 +124,8 @@ class RectangularRoom(object):
 
         returns: a Position object.
         """
-        x = round(random.uniform(0.0, float(self.width)),2)
-        y = round(random.uniform(0.0, float(self.height)),2)
+        x = random.uniform(0.0, float(self.width))
+        y = random.uniform(0.0, float(self.height))
         return Position(x,y)
 
     def isPositionInRoom(self, pos):
@@ -140,7 +140,6 @@ class RectangularRoom(object):
             return True
         else:
             return False
-
 
 class Robot(object):
     """
@@ -212,9 +211,6 @@ class Robot(object):
         """
         self.robot_position = self.robot_position.getNewPosition(self.direction, self.speed)
         self.room.cleanTileAtPosition(self.robot_position)
-
-
-
 
 # === Problem 2
 class StandardRobot(Robot):
