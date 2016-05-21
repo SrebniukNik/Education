@@ -1,0 +1,23 @@
+def slow_closest_pair(cluster_list):
+    """
+    Compute the distance between the closest pair of clusters in a list (slow)
+
+    Input: cluster_list is the list of clusters
+
+    Output: tuple of the form (dist, idx1, idx2) where the centers of the clusters
+    cluster_list[idx1] and cluster_list[idx2] have minimum distance dist.
+    """
+    result = set([float("inf"), -1, -1])
+    min_distance = float("inf")
+    length = len(cluster_list)
+    for dummy_i in range(length):
+        for dummy_j in range(dummy_i + 1, length):
+            current_pair = pair_distance(cluster_list, dummy_i, dummy_j)
+            if current_pair[0] < min_distance:
+                min_distance = current_pair[0]
+                result = set([(min_distance, dummy_i, dummy_j)])
+            if current_pair[0] == min_distance:
+                result.add((min_distance, dummy_i, dummy_j))
+    return result
+
+print "slow_closest_pair", slow_closest_pair(cluster_list)

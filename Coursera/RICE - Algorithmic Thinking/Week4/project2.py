@@ -2,6 +2,7 @@
 
 from collections import deque
 #import alg_module2_graphs
+import random
 
 def bfs_visited(ugraph, start_node):
     '''
@@ -11,7 +12,7 @@ def bfs_visited(ugraph, start_node):
     :return: set of visited nodes
     '''
     queue = deque([start_node])
-    visited = [start_node]
+    visited = set([start_node])
     #print "BFS visited - ugraph", ugraph, "start node", start_node
     while queue:
         check = queue.popleft()
@@ -19,7 +20,7 @@ def bfs_visited(ugraph, start_node):
         if ugraph.has_key(check):
             for neighbor in ugraph[check]:
                 if neighbor not in visited:
-                    visited.append(neighbor)
+                    visited.add(neighbor)
                     queue.append(neighbor)
     return set(visited)
 
@@ -33,9 +34,12 @@ def cc_visited(ugraph):
     remaining_node = ugraph.keys()
     all_sets = []
     while remaining_node:
-        connected_set = bfs_visited(ugraph, remaining_node.pop())
-        if connected_set not in all_sets:
-            all_sets.append(connected_set)
+        random_node = random.choice(remaining_node)
+        connected_set = bfs_visited(ugraph, random_node)
+        all_sets.append(connected_set)
+        for node in connected_set:
+            if node in remaining_node:
+                remaining_node.remove(node)
     return all_sets
 
 def largest_cc_size(ugraph):
@@ -45,14 +49,12 @@ def largest_cc_size(ugraph):
     :param ugraph: undirection graph in Dict format
     :return: integer
     '''
-    remaining_node = ugraph.keys()
-    size = 0
-    while remaining_node:
-        connected_set = bfs_visited(ugraph, remaining_node.pop())
-        current_set_size = len(connected_set)
-        if current_set_size > size:
-            size = current_set_size
-    return size
+    cc_size_list = cc_visited(ugraph)
+    component_lenghts = [len(cc_size) for cc_size in cc_size_list]
+    if len(component_lenghts) > 0:
+        return max(component_lenghts)
+    else:
+        return 0
 
 #print cc_visited(EX_GRAPH)
 
@@ -70,17 +72,19 @@ def compute_resilience(ugraph, attack_order):
     '''
     resilience = []
     largest_original = largest_cc_size(ugraph)
+    #print "largest component original", largest_original
     for target in attack_order:
-        #print "resilience urgaph Before pop", ugraph
-        #largest_original = largest_cc_size(ugraph)
-        #print "resilience", target, ugraph[target]
-        #temp_list = [target] + list(ugraph[target])
-        #print "temp_list", temp_list
-        #for edge in temp_list:
-        for neighbors in ugraph[target]:
-            ugraph[neighbors].remove(target)
-        ugraph.pop(target)
-        #print "urgaph after pop", ugraph
+        if attack_order.index(target) % 300 == 0:
+            print "Target", target, ' index ', attack_order.index(target)
+        #neighbors = ugraph[target]
+        try:
+            if target in ugraph:
+                for neighbor in ugraph[target]:
+                    if target in ugraph[neighbor]:
+                        ugraph[neighbor].remove(target)
+                    ugraph.pop(target, None)
+        except KeyError:
+            pass
         largest_atacked = largest_cc_size(ugraph)
         resilience.append(largest_atacked)
     resilience.insert(0, largest_original)

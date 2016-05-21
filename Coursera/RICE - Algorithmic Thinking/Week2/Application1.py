@@ -1,22 +1,24 @@
 """Project 1"""
 
-import urllib2
+import random
+
+import Project1
+import matplotlib.pyplot as plot
+
+import alg_dpa_trial
 
 
-# EX_GRAPH0 = {0: set([1, 2]), 1: set([]), 2: set([])}
-# EX_GRAPH1 = {0: set([1, 4, 5]), 1: set([2, 6]), 2: set([3]), 3: set([0]), 4: set([1]), 5: set([2]), 6: set([])}
-# EX_GRAPH2 = {0: set([1, 4, 5]), 1: set([2, 6]), 2: set([3, 7]), 3: set([7]), 4: set([1]), 5: set([2]), 6: set([]), 7: set([3]), 8: set([1, 2]), 9: set([0, 3, 4, 5, 6, 7])}
+###########################################
+# Code for loading citation graph from file
 
-###################################
-# Code for loading citation graph
-def load_graph_url(graph_url):
+def load_graph_file(input_file):
     """
     Function that loads a graph given the URL
     for a text representation of the graph
 
     Returns a dictionary that models a graph
     """
-    graph_file = urllib2.urlopen(graph_url)
+    graph_file = open(input_file, 'rb')
     graph_text = graph_file.read()
     graph_lines = graph_text.split('\n')
     graph_lines = graph_lines[ : -1]
@@ -33,134 +35,170 @@ def load_graph_url(graph_url):
 
     return answer_graph
 
-#citation_graph = load_graph(CITATION_URL)
 
-def load_graph_file(input_file):
-    """
-    Function that loads a graph given the URL
-    for a text representation of the graph
+def normalization(distribution):
+    '''
+    Function for normalizing edges distribution
+    :param distribution: :dict. Unnormilized distribution
+    :return: Dict
+    '''
+    new_dict = {}
+    total = float(sum(value for value in distribution.values()))
+    for degree, count in distribution.iteritems():
+        new_dict[degree] = count / total
+    return new_dict
 
-    Returns a dictionary that models a graph
-    """
-    graph_file = open(input_file, 'rb')
-    graph_text = graph_file.read()
-    graph_lines = graph_text.split('\n')
-    graph_lines = graph_lines[ : -1]
 
-    #print "Loaded graph with", len(graph_lines), "nodes"
+def plotting(graph, name, file_to_save=None):
+    '''
+    Function for plotting log-log normalized in-degree distribution for graph
+    :param graph: :dict. Graph
+    :param name: :str. plot name
+    :param file_to_save: :str. file name for saving plotting
+    :return: None
+    '''
+    plot.plot(graph.keys(), graph.values(), 'ro')
+    plot.loglog()
+    plot.title('Normalized in-degree distribution of a %s graph (log-log)' % name)
+    plot.xlabel('In-degree')
+    plot.ylabel('Normalized distribution')
+    plot.xlim(0, 2000)
+    plot.tight_layout()
+    if file_to_save:
+        plot.savefig(file_to_save)
 
-    answer_graph = {}
-    for line in graph_lines:
-        neighbors = line.split(' ')
-        node = int(neighbors[0])
-        answer_graph[node] = set([])
-        for neighbor in neighbors[1 : -1]:
-            answer_graph[node].add(int(neighbor))
 
-    return answer_graph
+def Question1(filename=None, file_to_save=None):
+    '''
+    Function for simulation of answer for Question 1
+    :param filename: :string. File name for importing graph initial data
+    :param file_to_save: :string. File name for saving plotting
+    :return: None
+    '''
+    graph = load_graph_file(filename)
+    normalized = normalization(Project1.in_degree_distribution(graph))
+    plotting(normalized, 'citation', file_to_save)
 
-#citation_graph = load_graph(CITATION_URL)
 
-def make_complete_graph(num_nodes):
-    """
-    Takes the number of nodes num_nodes and returns a dictionary corresponding
-    to a complete directed graph with the specified number of nodes
-    Parameters:
-        num_nodes: number of nodes
+#Question 2.
+def re_algorithm(length, probability):
+    '''
+    Function for simulation of answer for Question w
+    :param length: (int) lenght of nodes in graph (int)
+    :param probability: :float. Probability
+    :return:
+    '''
+    graph = {key: set() for key in xrange(length)}
+    for i in xrange(length):
+        for j in xrange(length):
+            if i != j:
+                if random.random() < probability:
+                    graph[i].add(j)
+                if random.random() < probability:
+                    graph[j].add(i)
+    return graph
 
-    Assumes:
-        Provide positive number of num_nodes
+#Answers on Question 2
+#Q1.
+# Is the expected value of the in-degree the same for every node in an ER graph?
+# Please answer yes or no and include a short explanation for your answer.
+#Answer:
+#Yes
 
-    Returns:
-        A complete graph contains all possible edges subject to the restriction
-        that self-loops are not allowed. The nodes of the graph should be
-        numbered 0 to num_nodes - 1 when num_nodes is positive. Otherwise,
-        the function returns a dictionary corresponding to the empty graph.
-    """
-    graph = {}
-    if num_nodes <= 0:
-        return graph
-    else:
-        nodes = range(num_nodes)
-        for node in nodes:
-            tmp = nodes[:]
-            tmp.remove(node)
-            graph[node] = set(tmp)
+#Q2.What does the in-degree distribution for an ER graph look like?
+#Provide a short written description of the shape of the distribution.
+#Answer:
+#It looks like binomial distribution where the number of node is number of trial and number of node edges is result for this trial
+
+#Q3. Does the shape of the in-degree distribution plot for ER look similar to the shape of the in-degree distribution
+#for the citation graph? Provide a short explanation of the similarities or differences.
+#Focus on comparing the shape of the two plots as discussed in the class page on "Creating, formatting, and comparing plots".
+#The plot for ED in-degree distribution looks lile as binomial distribution plot, where in-degree distribution look like
+#logarithmic shape plot
+
+
+def mean_out_degree(graph):
+    '''
+    Function generating mean of out degree
+    :param graph: :dict. Graph
+    :return: Float
+    '''
+    length = float(len(graph))
+    return sum(len(x) for x in graph.itervalues()) / length
+
+
+def Question3(file_to_save=None):
+    '''
+    Function for simulation answer for Question 3
+    :param file_to_save: :string. File name for saving plotting
+    :return: None
+    '''
+    random_graph = re_algorithm(2000, 0.25)
+    normalized = normalization(Project1.in_degree_distribution(random_graph))
+    plotting(normalized, 'randomly generated', file_to_save)
+
+
+def dpa_algorithm(lenght, probability):
+    '''
+    Function for generating graph with some : param probability edges for every node
+    :param lenght: (int) lenght of nodes in graph (int)
+    :param probability: :float. Probability
+    :return:
+    '''
+    graph = Project1.make_complete_graph(probability)
+    dpa_alg = alg_dpa_trial.DPATrial(probability)
+    for dummy_i in xrange(probability, lenght):
+        graph[dummy_i] = dpa_alg.run_trial(probability)
     return graph
 
 
-def compute_in_degrees(digraph):
-    """
-    Takes a directed graph digraph (represented as a dictionary)
-    and computes the in-degrees for the nodes in the graph.
-    Parameters:
-        digraph: dictionary corresponding to a complete directed
-                graph
-    Assumes:
-        Provide complete directed graph with the specified number
-        of nodes
-    Returns:
-        a dictionary with the same set of keys (nodes) as digraph
-        whose corresponding values are the number of edges whose
-        head matches a particular node.
-    """
-    edges = []
-    edges_summary = {}
-    #print "all values", digraph.values()
-    for value in digraph.values():
-        #print "value", value
-        edges.extend(list(value))
-    for node in digraph.keys():
-        edges_summary[node] = edges.count(node)
-    return edges_summary
+def Question4(filename, file_to_save=None):
+    '''
+    Function for simulation answer for Question 4
+    :param filename: :string. File name for importing graph initial data
+    :param file_to_save: :string. File name for saving plotting
+    :return: None
+    '''
+    graph = load_graph_file(filename)
+    print 'Mean out degree ', mean_out_degree(graph)
+    dpa_result = dpa_algorithm(27700, 13)
+    normalized = normalization(Project1.in_degree_distribution(dpa_result))
+    plotting(normalized, 'DPA-generated', file_to_save)
 
 
-def in_degree_distribution(digraph):
-    """
-    Takes a directed graph digraph (represented as a dictionary) and
-    computes the unnormalized distribution of the in-degrees of the graph.
+#Answers on Question 5
+#Q1.
+#Is the plot of the in-degree distribution for the DPA graph similar to that of the citation graph?
+#Provide a short explanation of the similarities or differences. Focus on the various properties of the
+#two plots as discussed in the class page on "Creating, formatting, and comparing plots".
+#Answer:
+# None
 
-    Parameters:
-        digraph: dictionary corresponding to a complete directed
-                graph
-    Assumes:
-        Provide complete directed graph with the specified number
-        of nodes
-    Returns:
-        A dictionary whose keys correspond to in-degrees of nodes in the graph.
-        The value associated with each particular in-degree is the number of
-        nodes with that in-degree. In-degrees with no corresponding nodes in
-        the graph are not included in the dictionary.
-    """
-    unnormalized = {}
-    edges = compute_in_degrees(digraph)
-    values = edges.values()
-    #print "values", values
-    for value in values:
-        unnormalized[value] = values.count(value)
-    return unnormalized
+#Q2.What does the in-degree distribution for an ER graph look like?
+#Which one of the three social phenomena listed above mimics the behavior of the DPA process?
+#Provide a short explanation for your answer.
+#Answer:
+#None
 
-#You can provide URL of citation file or
-CITATION_URL = "http://storage.googleapis.com/codeskulptor-alg/alg_phys-cite.txt"
-#graph = load_graph(input_file)
-#You can provide filename of citation file or use function for downloading of URL
-input_file = "citation_file.txt"
-#Loading and format graph
-graph = load_graph_file(input_file)
-#print graph
-indegree_count = compute_in_degrees(graph)
+#Q3. Could one of these phenomena explain the structure of the physics citation graph?
+#Provide a short explanation for your answer.
+#Answer:
+#None
 
-print indegree_count
-
-unnorm_distribution = in_degree_distribution(indegree_count)
-
-#print unnorm_distribution
+def main():
+    '''
+    Main function
+    :return:
+    '''
+    filename = 'citation_file.txt'
+    Question1(filename, 'Question1-citation.png')
+    plot.clf()
+    Question3('Question3-random.png')
+    plot.clf()
+    Question4(filename, 'Question4-dpa.png')
+    plot.clf()
 
 
 
-
-#digraph = make_complete_graph(6)
-
-#print compute_in_degrees(GRAPH9)
-
-#print in_degree_distribution(GRAPH9)
+if __name__ == '__main__':
+    main()
