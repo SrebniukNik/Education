@@ -3,12 +3,13 @@ Provided code for Application portion of Module 2
 """
 
 # general imports
-import urllib2
 import random
 import time
-import math
-import project2, project1
+import urllib2
+
 import alg_upa_trial
+import project1
+import project2
 
 # CodeSkulptor import
 #import simpleplot
